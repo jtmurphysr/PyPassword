@@ -2,6 +2,7 @@ from tkinter import *
 import random
 from tkinter import messagebox
 import pyperclip
+import json
 
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
 # Generate a secure random password
@@ -48,75 +49,70 @@ def generate_password():
 # ---------------------------- SAVE PASSWORD ------------------------------- #
 # Write website credentials to a data file
 def save():
-    """
-    Saves the website, email, and password to a file after validating inputs.
-    Ensures that no duplicate website or email entries exist in the file.
-    """
-    website = website_entry.get().strip()  # Get the website name
-    email = email_entry.get().strip()  # Get the email/username
-    password = password_entry.get().strip()  # Get the generated password
+    website = website_entry.get().strip()
+    email = email_entry.get().strip()
+    password = password_entry.get().strip()
 
-    # Check if website or email already exists in the file
-    with open("data.txt", "r") as data_file:
-        my_data = [line for line in data_file if website and email in line]
-        # if website in data_file.read():
-        if my_data:
-            # Display a warning if duplicate entries exist
-            messagebox.showwarning(title="Warning", message="Website or email already exists!")
-            # Clear the input fields
-            website_entry.delete(0, END)
-            password_entry.delete(0, END)
-            email_entry.delete(0, END)
-            return
-
-    # Ensure all fields have data before saving
     if not website or not email or not password:
         messagebox.showwarning(title="Warning", message="Please fill out all fields!")
         return
 
-    # Format the data to write to the file
-    new_data = f"{website} {email} {password} \n"
+    new_data = {
+        website: {
+            "email": email,
+            "password": password
+        }
+    }
 
     try:
-        # Append the new data to the file
-        with open("data.txt", "a") as data_file:
-            data_file.write(new_data)
-            # Clear the input fields upon successful save
-            website_entry.delete(0, END)
-            password_entry.delete(0, END)
-            success_box = messagebox.showinfo(title="Success", message="Info saved!")
+        # Load existing data
+        with open("data.json", "r") as data_file:
+            data = json.load(data_file)
+    except FileNotFoundError:
+        # If the file does not exist, start with an empty dictionary
+        data = {}
+
+    # Update data
+    data.update(new_data)
+
+    try:
+        # Save updated data back to the file
+        with open("data.json", "w") as data_file:
+            json.dump(data, data_file, indent=4)
+        messagebox.showinfo(title="Success", message="Info saved!")
+        website_entry.delete(0, END)
+        password_entry.delete(0, END)
     except Exception as e:
-        # Handle file writing errors with a message box
-        print(f"An error occurred: {str(e)}")
-        error_string = f"An error occurred: {str(e)}"
-        error_box = messagebox.showerror(title="Error", message=error_string)
-        error_box.pack()
+        messagebox.showerror(title="Error", message=f"An error occurred: {str(e)}")
 
 
 # ---------------------------- RETRIEVE PASSWORD ------------------------------- #
 # Retrieve website credentials from the file
-def retrieve(string):
-    """
-    Searches for a specified website in the file and retrieves the corresponding credentials.
-    Populates the input fields with the retrieved data if the entry exists.
-    """
-    with open("data.txt", "r") as data_file:
-        string = "nodorks"  # Default search value (should be replaced logically)
-        # Search for lines containing the specified string
-        my_data = [line for line in data_file if string in line]
-        if my_data:
-            # Display success message if entry is found
-            success_box = messagebox.showinfo(title="Success", message="Info found!")
-            website_entry.delete(0, END)  # Clear website entry field
-            website = str(my_data).strip("[]'")  # Format retrieved website entry
-            website = website.strip("\n")  # Remove newline characters
-            list_data = website.split()  # Split the data into list elements
-            print(list_data[2])  # Debug print the password
-            website_entry.insert(0, list_data[0])  # Populate website field
-            password_entry.insert(0, list_data[2])  # Populate password field
-            email_entry.insert(0, list_data[1])  # Populate email field
+def retrieve(query):
+    website = query.strip()
+    if not website:
+        messagebox.showwarning(title="Warning", message="Please enter a website to search for!")
+        return
 
-    return None
+    try:
+        with open("data.json", "r") as data_file:
+            data = json.load(data_file)
+
+        # Find all keys that partially match the query
+        matches = {key: value for key, value in data.items() if website.lower() in key.lower()}
+
+        if matches:
+            # Display all matches in a formatted string
+            match_results = "\n\n".join([f"Website: {key}\nEmail: {value['email']}\nPassword: {value['password']}"
+                                         for key, value in matches.items()])
+            messagebox.showinfo(title="Results", message=f"Found the following matches:\n\n{match_results}")
+        else:
+            messagebox.showwarning(title="Not Found", message=f"No details for {website} exists.")
+    except FileNotFoundError:
+        messagebox.showerror(title="Error", message="Data file not found.")
+    except json.JSONDecodeError:
+        messagebox.showerror(title="Error", message="Error reading data file. Data may be corrupted.")
+
 
 
 # ---------------------------- UI SETUP ------------------------------- #
