@@ -1,41 +1,45 @@
-# PyPassword
+# Password Manager
 
-A secure and user-friendly password manager built with Python, featuring encryption, master password protection, and a modern interface.
+A secure password manager application built with Python, featuring encryption, master password protection, and a user-friendly interface.
 
 ## Features
 
-- 🔐 **Secure Password Storage**
-  - Master password protection with bcrypt hashing
-  - Fernet encryption for stored passwords
-  - Secure password generation
+- 🔒 Secure password storage with encryption
+- 🔑 Master password protection
+- 📝 Password generation with customizable requirements
+- 🔍 Search functionality
+- 📋 Copy username/password to clipboard
+- 📥 Import from JSON
+- 📤 Export to JSON
+- 🛡️ Comprehensive error handling and logging
+- 🔄 Support for both old and new data formats
 
-- 🖥️ **User-Friendly Interface**
-  - Clean and intuitive GUI
-  - Password list with search functionality
-  - Right-click context menu for quick actions
-  - Keyboard shortcuts
+## Security
 
-- 📁 **Data Management**
-  - Import passwords from JSON
-  - Automatic encryption/decryption
-  - Duplicate entry handling
-  - Secure deletion
+- Master password hashing using bcrypt
+- Symmetric encryption for stored passwords using Fernet
+- Secure key generation using PBKDF2
+- Salt-based password hashing
+- Comprehensive error handling and logging
+- No plaintext password storage
+
+## Requirements
+
+- Python 3.8+
+- Required packages:
+  - cryptography
+  - bcrypt
+  - tkinter (usually comes with Python)
 
 ## Installation
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/PyPassword.git
-cd PyPassword
+git clone https://github.com/yourusername/password_manager.git
+cd password_manager
 ```
 
-2. Create and activate a virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-3. Install dependencies:
+2. Install required packages:
 ```bash
 pip install -r requirements.txt
 ```
@@ -44,84 +48,40 @@ pip install -r requirements.txt
 
 1. Run the application:
 ```bash
-python password_manager.py
+python main.py
 ```
 
-2. First-time setup:
-   - Add your first password entry
-   - Create a master password when prompted
-   - Your master password must be at least 8 characters and include:
-     - Uppercase letters
-     - Lowercase letters
-     - Numbers
-     - Special characters
+2. On first run, create a master password
+3. Add passwords using the interface
+4. Use the search function to find stored passwords
+5. Right-click on entries to copy username/password
 
-3. Regular usage:
-   - Enter the master password to access your passwords
-   - Add new entries using the input fields
-   - Generate secure passwords with the "Generate Password" button
-   - Search entries using the search function
-   - Right-click on entries to:
-     - Copy username
-     - Copy password
-     - Delete entry
-   - Use Ctrl+C to quickly copy passwords
+## Development
 
-4. Importing data:
-   - Place your `data.json` file in the application directory
-   - Use File > Import from data.json
-   - Follow the prompts to complete the import
+### Running Tests
+```bash
+python -m unittest test_file_manager.py -v
+```
 
-## Security Features
-
-- **Master Password Protection**
-  - Bcrypt hashing with salt
-  - Minimum complexity requirements
-  - Secure storage
-
-- **Data Encryption**
-  - Fernet symmetric encryption
-  - Secure key generation
-  - Protected storage
-
-- **Secure Storage**
-  - Encrypted password file
-  - Protected master password hash
-  - Secure salt storage
-
-## File Structure
-
-- `password_manager.py`: Main application code
-- `requirements.txt`: Python dependencies
-- `logo.png`: Application logo
-- Generated files:
-  - `data.enc`: Encrypted password storage
-  - `master.hash`: Hashed master password
-  - `salt.salt`: Cryptographic salt
-
-## Dependencies
-
-- Python 3.8+
-- cryptography==41.0.7
-- bcrypt==4.0.1
-- pyperclip==1.8.2
-- pillow==10.2.0
+### Project Structure
+- `main.py`: Application entry point
+- `file_manager.py`: File operations and encryption
+- `gui.py`: User interface
+- `test_file_manager.py`: Unit tests
+- `requirements.txt`: Project dependencies
 
 ## Contributing
 
 1. Fork the repository
-2. Create your feature branch
+2. Create a feature branch
 3. Commit your changes
 4. Push to the branch
-5. Create a new Pull Request
+5. Create a Pull Request
 
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Security Notice
+## Changelog
 
-- Keep your master password secure and never share it
-- Regularly backup your encrypted password file
-- Use generated passwords for maximum security
-- Update dependencies regularly for security patches
+See [CHANGELOG.md](CHANGELOG.md) for a list of changes and version history.
