@@ -1,0 +1,4 @@
+pyperclip==1.8.2
+cryptography==41.0.7
+bcrypt==4.0.1
+pillow==10.2.0  # For logo handling 
