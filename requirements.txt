@@ -1,4 +1,7 @@
-pyperclip==1.8.2
-cryptography==41.0.7
-bcrypt==4.0.1
-pillow==10.2.0  # For logo handling 
+bcrypt==4.3.0
+cffi==1.17.1
+cryptography==44.0.2
+pillow==11.1.0
+pycparser==2.22
+pyperclip==1.9.0
+wheel==0.45.1
