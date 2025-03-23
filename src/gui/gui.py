@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog
 import pyperclip
+import os
+from PIL import Image, ImageTk
 
 class PasswordManagerGUI:
     """Handles all GUI-related operations for the password manager."""
@@ -21,89 +23,108 @@ class PasswordManagerGUI:
         self.setup_ui()
 
     def setup_ui(self):
-        """Set up the user interface."""
-        # Menu Bar
-        menubar = tk.Menu(self.window)
-        self.window.config(menu=menubar)
+        """Set up the GUI elements"""
+        # Configure grid weights
+        self.window.grid_columnconfigure(1, weight=1)
+        self.window.grid_rowconfigure(2, weight=1)
         
-        # File Menu
-        file_menu = tk.Menu(menubar, tearoff=0)
-        menubar.add_cascade(label="File", menu=file_menu)
-        file_menu.add_command(label="Import from data.json", command=self.on_import)
-        file_menu.add_command(label="Export to data.json", command=self.on_export)
-        file_menu.add_separator()
-        file_menu.add_command(label="Exit", command=self.window.quit)
+        # Create main container
+        main_container = ttk.Frame(self.window)
+        main_container.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+        
+        # Configure main container grid
+        main_container.grid_columnconfigure(1, weight=1)
+        main_container.grid_rowconfigure(2, weight=1)
+        
+        # Logo
+        logo_path = os.path.join(os.path.dirname(__file__), "..", "assets", "logo.png")
+        try:
+            logo_image = Image.open(logo_path)
+            logo_photo = ImageTk.PhotoImage(logo_image)
+            logo_label = ttk.Label(main_container, image=logo_photo)
+            logo_label.image = logo_photo  # Keep a reference
+            logo_label.grid(column=0, row=0, columnspan=2, pady=(0, 10))
+        except Exception as e:
+            print(f"Error loading logo: {e}")
+        
+        # Website entry
+        website_label = ttk.Label(main_container, text="Website:")
+        website_label.grid(column=0, row=1, sticky="e", padx=(0, 5))
+        
+        self.website_var = tk.StringVar()
+        self.website_entry = ttk.Entry(main_container, textvariable=self.website_var)
+        self.website_entry.grid(column=1, row=1, sticky="ew", padx=(0, 5))
+        
+        # Username entry
+        username_label = ttk.Label(main_container, text="Username:")
+        username_label.grid(column=0, row=2, sticky="e", padx=(0, 5))
+        
+        self.username_var = tk.StringVar()
+        self.username_entry = ttk.Entry(main_container, textvariable=self.username_var)
+        self.username_entry.grid(column=1, row=2, sticky="ew", padx=(0, 5))
+        
+        # Password entry
+        password_label = ttk.Label(main_container, text="Password:")
+        password_label.grid(column=0, row=3, sticky="e", padx=(0, 5))
+        
+        self.password_var = tk.StringVar()
+        self.password_entry = ttk.Entry(main_container, textvariable=self.password_var, show="*")
+        self.password_entry.grid(column=1, row=3, sticky="ew", padx=(0, 5))
+        
+        # Buttons frame
+        button_frame = ttk.Frame(main_container)
+        button_frame.grid(column=0, row=4, columnspan=2, pady=10)
+        
+        # Add button
+        add_button = ttk.Button(button_frame, text="Add", command=self.on_save)
+        add_button.grid(column=0, row=0, padx=5)
+        
+        # Update button
+        update_button = ttk.Button(button_frame, text="Update", command=self.on_save)
+        update_button.grid(column=1, row=0, padx=5)
+        
+        # Delete button
+        delete_button = ttk.Button(button_frame, text="Delete", command=self.on_delete)
+        delete_button.grid(column=2, row=0, padx=5)
+        
+        # Tree view
+        self.tree = ttk.Treeview(main_container, columns=("Website", "Username", "Password"), show="headings")
+        self.tree.grid(column=0, row=5, columnspan=2, sticky="nsew", pady=10)
+        
+        # Configure tree columns
+        self.tree.heading("Website", text="Website")
+        self.tree.heading("Username", text="Username")
+        self.tree.heading("Password", text="Password")
+        
+        self.tree.column("Website", width=150)
+        self.tree.column("Username", width=150)
+        self.tree.column("Password", width=100)
+        
+        # Bind selection event
+        self.tree.bind("<<TreeviewSelect>>", self.on_select)
+        
+        # Load initial data
+        self.load_data()
 
-        # Set up the logo
-        canvas = tk.Canvas(self.window, height=200, width=200)
-        self.logo_img = tk.PhotoImage(file="logo.png")
-        canvas.create_image(100, 100, image=self.logo_img)
-        canvas.grid(column=1, row=0)
+    def on_select(self, event):
+        """Handle selection of an item in the tree."""
+        selected = self.tree.selection()
+        if not selected:
+            return
+        
+        item = self.tree.item(selected[0])
+        values = item['values']
+        
+        # Update entry fields with selected values
+        self.website_var.set(values[0])
+        self.username_var.set(values[1])
+        self.password_var.set(values[2])
 
-        # Labels
-        website_label = tk.Label(self.window, text="Website:", bg="white")
-        website_label.grid(column=0, row=1)
-
-        email_label = tk.Label(self.window, text="Email/Username:", bg="white")
-        email_label.grid(column=0, row=2)
-
-        password_label = tk.Label(self.window, text="Password:", bg="white")
-        password_label.grid(column=0, row=3)
-
-        # Entry fields
-        self.website_entry = tk.Entry(self.window, width=35)
-        self.website_entry.grid(row=1, column=1, columnspan=2)
-        self.website_entry.focus()
-
-        self.email_entry = tk.Entry(self.window, width=35)
-        self.email_entry.grid(row=2, column=1, columnspan=2)
-
-        self.password_entry = tk.Entry(self.window, width=21)
-        self.password_entry.grid(row=3, column=1)
-
-        # Buttons
-        generate_password_button = tk.Button(self.window, text="Generate Password", 
-                                          command=self.on_generate_password)
-        generate_password_button.grid(row=3, column=2)
-
-        add_button = tk.Button(self.window, text="Add", width=36, command=self.on_save)
-        add_button.grid(row=4, column=1, columnspan=2)
-
-        search_button = tk.Button(self.window, text="Search", width=15, 
-                               command=lambda: self.on_search(self.website_entry.get()))
-        search_button.grid(row=1, column=3)
-
-        # Treeview
-        tree_frame = tk.Frame(self.window)
-        tree_frame.grid(row=5, column=0, columnspan=4, pady=20)
-
-        self.tree = ttk.Treeview(tree_frame, columns=('Website', 'Username', 'Password'), show='headings')
-        self.tree.heading('Website', text='Website')
-        self.tree.heading('Username', text='Username')
-        self.tree.heading('Password', text='Password')
-        self.tree.column('Website', width=200)
-        self.tree.column('Username', width=200)
-        self.tree.column('Password', width=200)
-        self.tree.pack(side='left', fill='y')
-
-        # Scrollbar
-        scrollbar = ttk.Scrollbar(tree_frame, orient='vertical', command=self.tree.yview)
-        scrollbar.pack(side='right', fill='y')
-        self.tree.configure(yscrollcommand=scrollbar.set)
-
-        # Context menu
-        self.context_menu = tk.Menu(self.window, tearoff=0)
-        self.context_menu.add_command(label="Copy Username", 
-                                    command=lambda: self.copy_to_clipboard('username'))
-        self.context_menu.add_command(label="Copy Password", 
-                                    command=lambda: self.copy_to_clipboard('password'))
-        self.context_menu.add_separator()
-        self.context_menu.add_command(label="Delete Entry", command=self.on_delete)
-
-        # Bindings
-        self.tree.bind('<Button-3>', self.show_context_menu)  # Right-click on Windows/Linux
-        self.tree.bind('<Button-2>', self.show_context_menu)  # Right-click on macOS
-        self.tree.bind('<Control-c>', lambda e: self.copy_to_clipboard('password'))
+    def load_data(self):
+        """Load data from the parent class and refresh the tree."""
+        if hasattr(self, 'on_get_data'):
+            data = self.on_get_data()
+            self.refresh_tree(data)
 
     def show_context_menu(self, event):
         """Show the context menu on right-click."""
@@ -134,14 +155,14 @@ class PasswordManagerGUI:
         """Get values from entry fields."""
         return {
             'website': self.website_entry.get().strip(),
-            'username': self.email_entry.get().strip(),
+            'username': self.username_entry.get().strip(),
             'password': self.password_entry.get().strip()
         }
 
     def clear_entries(self):
         """Clear all entry fields."""
         self.website_entry.delete(0, tk.END)
-        self.email_entry.delete(0, tk.END)
+        self.username_entry.delete(0, tk.END)
         self.password_entry.delete(0, tk.END)
 
     def refresh_tree(self, data):

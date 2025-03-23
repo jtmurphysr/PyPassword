@@ -5,6 +5,8 @@ import bcrypt
 import os
 import base64
 import logging
+import tempfile
+import shutil
 from cryptography.fernet import Fernet, InvalidToken
 from src.core.file_manager import FileManager
 
@@ -13,12 +15,13 @@ class TestFileManager(unittest.TestCase):
         """Set up test fixtures."""
         # Create a mock logger
         self.mock_logger = MagicMock()
-        patcher = patch('file_manager.logging.getLogger')
+        patcher = patch('src.core.file_manager.logging.getLogger')
         self.mock_get_logger = patcher.start()
         self.mock_get_logger.return_value = self.mock_logger
         self.addCleanup(patcher.stop)
 
-        self.test_dir = "/test/dir"
+        # Create a temporary directory for testing
+        self.test_dir = tempfile.mkdtemp()
         self.file_manager = FileManager(base_dir=self.test_dir)
         self.test_password = "test_password123"
         self.test_salt = bcrypt.gensalt()
@@ -31,6 +34,11 @@ class TestFileManager(unittest.TestCase):
                 "password": "test_pass"
             }
         }
+
+    def tearDown(self):
+        """Clean up test fixtures."""
+        # Remove the temporary directory and all its contents
+        shutil.rmtree(self.test_dir)
 
     def test_is_first_time_setup_true(self):
         """Test first time setup detection when files don't exist."""
@@ -74,7 +82,7 @@ class TestFileManager(unittest.TestCase):
 
     def test_verify_master_password_success(self):
         """Test successful master password verification."""
-        with patch('file_manager.FileManager._read_file') as mock_read, \
+        with patch('src.core.file_manager.FileManager._read_file') as mock_read, \
              patch('bcrypt.checkpw') as mock_checkpw:
             
             # Setup mocks
@@ -91,7 +99,7 @@ class TestFileManager(unittest.TestCase):
 
     def test_verify_master_password_failure(self):
         """Test failed master password verification."""
-        with patch('file_manager.FileManager._read_file') as mock_read, \
+        with patch('src.core.file_manager.FileManager._read_file') as mock_read, \
              patch('bcrypt.checkpw') as mock_checkpw:
             
             # Setup mocks
@@ -108,21 +116,21 @@ class TestFileManager(unittest.TestCase):
 
     def test_get_encryption_key(self):
         """Test encryption key retrieval."""
-        with patch('file_manager.FileManager._read_file') as mock_read:
+        with patch('src.core.file_manager.FileManager._read_file') as mock_read:
             # Setup mock
-            mock_read.return_value = self.test_key
+            mock_read.return_value = self.test_salt
             
             # Test key retrieval
-            result = self.file_manager.get_encryption_key()
+            result = self.file_manager.get_encryption_key(self.test_password)
             
             # Verify results
-            self.assertEqual(result, self.test_key)
-            mock_read.assert_called_once_with(self.file_manager.KEY_FILE)
+            self.assertIsNotNone(result)
+            mock_read.assert_called_once_with(self.file_manager.SALT_FILE)
 
     def test_save_load_password_data(self):
         """Test saving and loading password data."""
-        with patch('file_manager.FileManager._read_file') as mock_read, \
-             patch('file_manager.FileManager._write_file') as mock_write:
+        with patch('src.core.file_manager.FileManager._read_file') as mock_read, \
+             patch('src.core.file_manager.FileManager._write_file') as mock_write:
             
             # Setup mocks
             mock_write.return_value = True
@@ -151,7 +159,7 @@ class TestFileManager(unittest.TestCase):
         
         with patch('builtins.open', mock_open_obj), \
              patch('os.path.exists') as mock_exists, \
-             patch('file_manager.FileManager.save_password_data') as mock_save:
+             patch('src.core.file_manager.FileManager.save_password_data') as mock_save:
             
             # Setup mocks
             mock_exists.return_value = True
@@ -172,7 +180,7 @@ class TestFileManager(unittest.TestCase):
         mock_open_obj = mock_open()
         
         with patch('builtins.open', mock_open_obj), \
-             patch('file_manager.FileManager.load_password_data') as mock_load:
+             patch('src.core.file_manager.FileManager.load_password_data') as mock_load:
             
             # Setup mocks
             mock_load.return_value = self.test_data
@@ -187,7 +195,7 @@ class TestFileManager(unittest.TestCase):
 
     def test_load_password_data_empty(self):
         """Test loading password data when file doesn't exist."""
-        with patch('file_manager.FileManager._read_file') as mock_read:
+        with patch('src.core.file_manager.FileManager._read_file') as mock_read:
             # Setup mock
             mock_read.return_value = None
             
@@ -257,7 +265,7 @@ class TestFileManager(unittest.TestCase):
 
     def test_load_password_data_decryption_error(self):
         """Test error handling during password data decryption."""
-        with patch('file_manager.FileManager._read_file') as mock_read:
+        with patch('src.core.file_manager.FileManager._read_file') as mock_read:
             # Return invalid encrypted data
             mock_read.return_value = b"invalid_encrypted_data"
             
@@ -288,7 +296,7 @@ class TestFileManager(unittest.TestCase):
 
     def test_export_json_write_error(self):
         """Test error handling when exporting fails due to write error."""
-        with patch('file_manager.FileManager.load_password_data') as mock_load, \
+        with patch('src.core.file_manager.FileManager.load_password_data') as mock_load, \
              patch('builtins.open') as mock_open:
             
             # Setup mocks

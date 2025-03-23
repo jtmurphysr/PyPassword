@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Automatic format conversion during import
 - Unit tests for FileManager class
 - Test coverage for error handling and edge cases
+- Project structure reorganization
+- Documentation updates
+- Assets directory for application resources
+- Data directory for secure storage
+- Temporary directory support for testing
 
 ### Changed
 - Refactored FileManager class for better separation of concerns
@@ -20,18 +25,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced security with proper key generation
 - Updated logging system for better debugging
 - Improved test organization and coverage
+- Reorganized project structure for better maintainability
+- Updated import paths to reflect new structure
+- Moved application resources to assets directory
+- Moved data files to dedicated data directory
+- Improved key generation using password and salt
+- Enhanced test suite with proper cleanup
 
 ### Fixed
 - Fixed password masking in tree view
 - Fixed data format conversion issues
 - Fixed error handling in file operations
 - Fixed logging implementation
+- Fixed test imports after project restructuring
+- Fixed logger mock paths in tests
+- Fixed logo path in GUI
+- Fixed geometry manager conflicts in GUI
+- Fixed test directory permissions issues
+- Fixed key generation and storage approach
 
 ### Security
-- Enhanced key generation using PBKDF2
-- Improved error handling for security events
-- Added logging for security-related operations
-- Better handling of encryption/decryption errors
+- Improved key generation using password and salt
+- Centralized sensitive data storage
+- Enhanced file permissions handling
+- Better encryption key management
+- Secure temporary file handling in tests
 
 ## [0.1.0] - 2024-03-XX
 

@@ -13,11 +13,21 @@ class FileManager:
     
     def __init__(self, base_dir: str = None):
         """Initialize FileManager with optional base directory for testing."""
-        self.base_dir = base_dir or os.path.dirname(os.path.abspath(__file__))
-        self.HASH_FILE = os.path.join(self.base_dir, 'master.hash')
-        self.SALT_FILE = os.path.join(self.base_dir, 'master.salt')
-        self.KEY_FILE = os.path.join(self.base_dir, 'master.key')
-        self.DATA_ENC_FILE = os.path.join(self.base_dir, 'data.enc')
+        if base_dir is None:
+            # Go up two levels from this file to reach project root
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            self.base_dir = os.path.dirname(os.path.dirname(current_dir))
+        else:
+            self.base_dir = base_dir
+            
+        # Create data directory if it doesn't exist
+        self.data_dir = os.path.join(self.base_dir, 'data')
+        os.makedirs(self.data_dir, exist_ok=True)
+            
+        self.HASH_FILE = os.path.join(self.data_dir, 'master.hash')
+        self.SALT_FILE = os.path.join(self.data_dir, 'salt.salt')
+        self.KEY_FILE = os.path.join(self.data_dir, 'master.key')
+        self.DATA_ENC_FILE = os.path.join(self.data_dir, 'data.enc')
         
         # Setup logging
         logging.basicConfig(level=logging.INFO)
@@ -27,6 +37,7 @@ class FileManager:
         """Read file contents safely."""
         try:
             if not os.path.exists(filepath):
+                self.logger.error(f"Error reading file {filepath}: File does not exist")
                 return None
             with open(filepath, 'rb') as f:
                 return f.read()
@@ -93,9 +104,19 @@ class FileManager:
             self.logger.error(f"Error verifying master password: {str(e)}")
             return False
 
-    def get_encryption_key(self) -> Optional[bytes]:
-        """Get the encryption key from file."""
-        return self._read_file(self.KEY_FILE)
+    def get_encryption_key(self, password: str) -> Optional[bytes]:
+        """Get the encryption key by generating it from the password and stored salt."""
+        try:
+            # Get the stored salt
+            salt = self._read_file(self.SALT_FILE)
+            if not salt:
+                return None
+                
+            # Generate key from password and salt
+            return self._generate_key_from_password(password, salt)
+        except Exception as e:
+            self.logger.error(f"Error getting encryption key: {str(e)}")
+            return None
 
     def save_password_data(self, data: Dict[str, Any], key: bytes) -> bool:
         """Save encrypted password data."""
@@ -112,6 +133,7 @@ class FileManager:
         try:
             encrypted_data = self._read_file(self.DATA_ENC_FILE)
             if not encrypted_data:
+                # If file doesn't exist or is empty, return empty dict
                 return {}
             
             f = Fernet(key)
@@ -150,7 +172,7 @@ class FileManager:
             if not data:
                 return False
                 
-            export_file = os.path.join(self.base_dir, 'passwords_export.json')
+            export_file = os.path.join(self.data_dir, 'passwords_export.json')
             with open(export_file, 'w') as f:
                 json.dump(data, f, indent=4)
             return True

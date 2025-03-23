@@ -5,14 +5,15 @@ A secure password manager application built with Python, featuring encryption, m
 ## Features
 
 - 🔒 Secure password storage with encryption
-- 🔑 Master password protection
+- 🔑 Master password protection with bcrypt hashing
 - 📝 Password generation with customizable requirements
 - 🔍 Search functionality
 - 📋 Copy username/password to clipboard
-- 📥 Import from JSON
+- 📥 Import from JSON (with automatic format conversion)
 - 📤 Export to JSON
 - 🛡️ Comprehensive error handling and logging
 - 🔄 Support for both old and new data formats
+- 🔐 PBKDF2 key derivation for enhanced security
 
 ## Security
 
@@ -22,6 +23,9 @@ A secure password manager application built with Python, featuring encryption, m
 - Salt-based password hashing
 - Comprehensive error handling and logging
 - No plaintext password storage
+- Automatic format conversion for backward compatibility
+- Secure storage in dedicated data directory
+- Runtime-created secure storage with proper permissions
 
 ## Requirements
 
@@ -48,13 +52,17 @@ pip install -r requirements.txt
 
 1. Run the application:
 ```bash
-python main.py
+python src/main.py
 ```
 
-2. On first run, create a master password
-3. Add passwords using the interface
-4. Use the search function to find stored passwords
-5. Right-click on entries to copy username/password
+2. On first run:
+   - A secure `data` directory will be created automatically
+   - Create a master password
+   - Add passwords using the interface
+3. Use the search function to find stored passwords
+4. Right-click on entries to copy username/password
+
+Note: All encrypted data and security files are stored in the `data` directory, which is created with secure permissions when the application is first run.
 
 ## Development
 
@@ -62,26 +70,39 @@ python main.py
 ```
 password_manager/
 ├── src/
+│   ├── assets/         # Application resources
+│   │   └── logo.png
 │   ├── core/           # Core functionality
 │   │   ├── file_manager.py
 │   │   └── security.py
 │   ├── gui/           # User interface
 │   │   └── gui.py
 │   └── main.py        # Application entry point
-├── tests/             # Test files
+├── tests/            # Test files
 │   ├── test_file_manager.py
 │   └── test_password_manager.py
-├── docs/              # Documentation
+├── docs/             # Documentation
 │   ├── context.md
 │   └── CHANGELOG.md
 ├── README.md
 └── requirements.txt
 ```
 
+Note: The `data` directory is created at runtime and is not included in the repository.
+
 ### Running Tests
 ```bash
-python -m unittest tests/test_file_manager.py -v
+PYTHONPATH=$PYTHONPATH:. python -m unittest discover tests -v
 ```
+
+### Test Coverage
+- File operations
+- Error handling
+- Encryption/decryption
+- Password management
+- Import/export functionality
+- Logging system
+- Edge cases and error conditions
 
 ## Contributing
 
@@ -97,4 +118,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Changelog
 
-See [CHANGELOG.md](CHANGELOG.md) for a list of changes and version history.
+See [CHANGELOG.md](docs/CHANGELOG.md) for a list of changes and version history.

@@ -11,6 +11,7 @@ class PasswordManager:
         # Initialize components
         self.security = SecurityManager()
         self.file_manager = FileManager()
+        self.current_key = None  # Initialize current_key
         
         # Create main window
         self.window = tk.Tk()
