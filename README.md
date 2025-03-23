@@ -58,17 +58,30 @@ python main.py
 
 ## Development
 
-### Running Tests
-```bash
-python -m unittest test_file_manager.py -v
+### Project Structure
+```
+password_manager/
+├── src/
+│   ├── core/           # Core functionality
+│   │   ├── file_manager.py
+│   │   └── security.py
+│   ├── gui/           # User interface
+│   │   └── gui.py
+│   └── main.py        # Application entry point
+├── tests/             # Test files
+│   ├── test_file_manager.py
+│   └── test_password_manager.py
+├── docs/              # Documentation
+│   ├── context.md
+│   └── CHANGELOG.md
+├── README.md
+└── requirements.txt
 ```
 
-### Project Structure
-- `main.py`: Application entry point
-- `file_manager.py`: File operations and encryption
-- `gui.py`: User interface
-- `test_file_manager.py`: Unit tests
-- `requirements.txt`: Project dependencies
+### Running Tests
+```bash
+python -m unittest tests/test_file_manager.py -v
+```
 
 ## Contributing
 
