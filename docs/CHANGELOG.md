@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Assets directory for application resources
 - Data directory for secure storage
 - Temporary directory support for testing
+- Runtime-created secure storage with proper permissions
 
 ### Changed
 - Refactored FileManager class for better separation of concerns
@@ -31,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Moved data files to dedicated data directory
 - Improved key generation using password and salt
 - Enhanced test suite with proper cleanup
+- Enhanced password generation requirements
 
 ### Fixed
 - Fixed password masking in tree view
@@ -43,6 +45,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed geometry manager conflicts in GUI
 - Fixed test directory permissions issues
 - Fixed key generation and storage approach
+- Fixed password generation functionality
+- Fixed context menu functionality
 
 ### Security
 - Improved key generation using password and salt
@@ -50,6 +54,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced file permissions handling
 - Better encryption key management
 - Secure temporary file handling in tests
+- Improved key generation using PBKDF2
+- Runtime-created secure storage with proper permissions
 
 ## [0.1.0] - 2024-03-XX
 
